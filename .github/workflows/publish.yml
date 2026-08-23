@@ -33,6 +33,4 @@ jobs:
       - name: Verify package
         run: npm run verify
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public --provenance
+        run: npm publish --access public
