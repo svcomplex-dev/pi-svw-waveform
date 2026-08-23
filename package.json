@@ -1,6 +1,6 @@
 {
   "name": "pi-svw-waveform",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pi package for native svw waveform inspection and terminal rendering",
   "type": "module",
   "scripts": {
