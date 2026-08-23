@@ -127,6 +127,9 @@ install_macos() {
 
     say "Updating the svcomplex Homebrew tap..."
     brew tap "$tap"
+    if brew help trust >/dev/null 2>&1; then
+        brew trust "$tap"
+    fi
     brew update --quiet
     if brew list --formula "$formula" >/dev/null 2>&1; then
         brew upgrade "$formula"
