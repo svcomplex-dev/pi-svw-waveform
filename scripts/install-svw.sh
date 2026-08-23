@@ -118,7 +118,7 @@ install_macos() {
 
     tap=svcomplex-dev/tap
     if [ "$release_tag" = latest ]; then
-        formula="$tap/svw@latest"
+        formula="$tap/svw-latest"
     elif [ "$version_explicit" -eq 0 ]; then
         formula="$tap/svw"
     else
