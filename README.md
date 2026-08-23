@@ -41,7 +41,7 @@ installation.
 
 ## Use
 
-Ask Pi to inspect a VCD, FST, or FSDB waveform. The bundled Skill guides bounded
+Ask Pi to inspect a VCD or FST waveform. The bundled Skill guides bounded
 metadata, signal, value, change, comparison, and render queries. The extension's
 `svw_wave_render` tool displays a complete colored waveform in Pi's terminal
 without duplicating the canvas into model context.

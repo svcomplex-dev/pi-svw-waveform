@@ -75,7 +75,7 @@ function validateFrame(ansi: string, expectedHeight: number, expectedWidth: numb
 }
 
 const WaveformParameters = Type.Object({
-	waveform: Type.String({ description: "VCD, FST, or FSDB waveform path", minLength: 1 }),
+	waveform: Type.String({ description: "VCD or FST waveform path", minLength: 1 }),
 	start: Type.Integer({ description: "Inclusive starting native waveform tick" }),
 	end: Type.Integer({ description: "Inclusive ending native waveform tick" }),
 	hier: Type.Array(Type.String({ description: "Exact full hierarchical signal name from svw agent signals", minLength: 1 }), {

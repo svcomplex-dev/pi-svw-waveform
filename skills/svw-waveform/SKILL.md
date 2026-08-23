@@ -1,6 +1,6 @@
 ---
 name: svw-waveform
-description: Inspect VCD, FST, and FSDB waveforms with svw, query exact signal values and changes, compare waveforms, and render bounded terminal waveforms in Pi.
+description: Inspect VCD and FST waveforms with svw, query exact signal values and changes, compare waveforms, and render bounded terminal waveforms in Pi.
 compatibility: pi with the pi-svw-waveform package installed
 metadata:
   author: SVComplex
