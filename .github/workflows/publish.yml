@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      # Keep registry-url unset: an empty setup-node auth entry suppresses npm OIDC.
       - uses: actions/setup-node@v6
         with:
           node-version: "24.15.0"
