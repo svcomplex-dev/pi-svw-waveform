@@ -5,7 +5,12 @@
 set -eu
 
 repo="${SVW_REPOSITORY:-svcomplex-dev/svw}"
-requested_version="${SVW_VERSION:-latest}"
+default_version=0.1.0
+version_explicit=0
+if [ "${SVW_VERSION+x}" = x ]; then
+    version_explicit=1
+fi
+requested_version="${SVW_VERSION:-$default_version}"
 release_base_url="${SVW_RELEASE_BASE_URL:-https://github.com/${repo}/releases/download}"
 user_home="${HOME:-}"
 bin_dir="${SVW_BIN_DIR:-${user_home}/.local/bin}"
@@ -34,7 +39,7 @@ macOS installs from the svcomplex-dev/tap Homebrew tap. --bin-dir and
 --install-root are Linux-only. Linux downloads an audited GitHub Release archive.
 
 Environment variables:
-  SVW_VERSION           Version to install (default: latest)
+  SVW_VERSION           Version to install (default: newest stable release, currently 0.1.0)
   SVW_BIN_DIR           Linux command directory (default: ~/.local/bin)
   SVW_INSTALL_ROOT      Linux package root (default: ~/.local/share/svw)
   SVW_NO_MODIFY_PATH    Set to 1 to leave Linux startup files unchanged
@@ -48,6 +53,7 @@ while [ "$#" -gt 0 ]; do
         --version)
             [ "$#" -ge 2 ] || die "--version requires a value"
             requested_version=$2
+            version_explicit=1
             shift 2
             ;;
         --bin-dir)
@@ -112,6 +118,8 @@ install_macos() {
 
     tap=svcomplex-dev/tap
     if [ "$release_tag" = latest ]; then
+        formula="$tap/svw@latest"
+    elif [ "$version_explicit" -eq 0 ]; then
         formula="$tap/svw"
     else
         formula="$tap/svw@$product_version"
@@ -125,7 +133,7 @@ install_macos() {
     else
         brew install "$formula"
     fi
-    if [ "$release_tag" != latest ]; then
+    if [ "$formula" != "$tap/svw" ]; then
         brew link --overwrite --force "$formula"
     fi
 
