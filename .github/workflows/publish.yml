@@ -35,4 +35,18 @@ jobs:
       - name: Verify package
         run: npm run verify
       - name: Publish to npm
-        run: npm publish --access public
+        shell: bash
+        run: |
+          set +e
+          publish_output=$(npm publish --access public 2>&1)
+          publish_status=$?
+          set -e
+          printf '%s\n' "$publish_output"
+          if (( publish_status != 0 )); then
+            diagnostic=$(printf '%s\n' "$publish_output" | tail -n 20)
+            diagnostic=${diagnostic//'%'/'%25'}
+            diagnostic=${diagnostic//$'\r'/'%0D'}
+            diagnostic=${diagnostic//$'\n'/'%0A'}
+            printf '::error title=npm publish failed::%s\n' "$diagnostic"
+          fi
+          exit "$publish_status"
