@@ -29,3 +29,5 @@ jobs:
           fi
           test -n "$commits"
           scripts/check-commit-emails.sh $commits
+      - name: Verify hook tag policy
+        run: sh test/git-hooks.sh

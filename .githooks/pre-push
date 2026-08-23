@@ -1,16 +1,38 @@
 #!/bin/sh
 set -eu
 
+required_email=code@svcomplex.ai
 remote_name=${1:-origin}
 zero=0000000000000000000000000000000000000000
 
-while read -r _local_ref local_sha _remote_ref remote_sha; do
+while read -r local_ref local_sha _remote_ref remote_sha; do
   [ "$local_sha" != "$zero" ] || continue
+
+  case "$local_ref" in
+    refs/tags/*)
+      if [ "$remote_sha" != "$zero" ]; then
+        printf 'error: refusing to replace existing tag %s\n' "$local_ref" >&2
+        exit 1
+      fi
+      if [ "$(git cat-file -t "$local_sha")" != tag ]; then
+        printf 'error: release tags must be annotated: %s\n' "$local_ref" >&2
+        exit 1
+      fi
+      tagger_email=$(git for-each-ref --format='%(taggeremail)' "$local_ref")
+      if [ "$tagger_email" != "<$required_email>" ]; then
+        printf 'error: tagger email for %s must be %s\n' \
+          "$local_ref" "$required_email" >&2
+        exit 1
+      fi
+      ;;
+  esac
+
+  local_commit=$(git rev-parse "$local_sha^{commit}")
   if [ "$remote_sha" = "$zero" ]; then
-    commits=$(git rev-list "$local_sha" --not --remotes="$remote_name")
-    [ -n "$commits" ] || commits=$local_sha
+    commits=$(git rev-list "$local_commit" --not --remotes="$remote_name")
   else
-    commits=$(git rev-list "$remote_sha..$local_sha")
+    remote_commit=$(git rev-parse "$remote_sha^{commit}")
+    commits=$(git rev-list "$remote_commit..$local_commit")
   fi
   [ -z "$commits" ] || scripts/check-commit-emails.sh $commits
 done
