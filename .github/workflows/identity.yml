@@ -1,0 +1,31 @@
+name: Commit identity
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  identity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify author and committer email
+        env:
+          BASE_SHA: ${{ github.event.before || github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -eu
+          zero=0000000000000000000000000000000000000000
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$zero" ]; then
+            commits=$(git rev-list "$HEAD_SHA")
+          else
+            commits=$(git rev-list "$BASE_SHA..$HEAD_SHA")
+          fi
+          test -n "$commits"
+          scripts/check-commit-emails.sh $commits
