@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -7,6 +7,12 @@ import { spawnSync } from "node:child_process";
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const installer = join(packageRoot, "scripts", "install-svw.sh");
 const versionPattern = /^(?:latest|(?:release-)?(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))$/;
+const packageManifest = JSON.parse(readFileSync(join(packageRoot, "package.json"), "utf8"));
+
+export const packagedSvwRelease = packageManifest.svwRelease || "latest";
+if (!versionPattern.test(packagedSvwRelease)) {
+  throw new Error("package.json svwRelease must be latest or release-X.Y.Z");
+}
 
 export function buildInstallArguments(platform, arch, root, version) {
   if (!versionPattern.test(version)) {
@@ -40,7 +46,7 @@ export function installSvw({
   platform = process.platform,
   arch = process.arch,
   root = packageRoot,
-  version = process.env.SVW_PI_VERSION || "latest",
+  version = process.env.SVW_PI_VERSION || packagedSvwRelease,
   spawn = spawnSync
 } = {}) {
   if (process.env.SVW_PI_SKIP_INSTALL === "1") {

@@ -22,16 +22,18 @@ and extension on subsequent runs.
 
 ## What installation does
 
-The package bootstrap is intentionally platform-specific:
+The package bootstrap is intentionally platform-specific. Published package
+versions pin the immutable `release-X.Y.Z` that triggered their publication:
 
-- Linux x64 downloads the public `latest` GitHub Release archive and checksum,
+- Linux x64 downloads the pinned public GitHub Release archive and checksum,
   verifies SHA-256 through the audited svw installer, and keeps the installation
   inside this Pi package.
-- Apple Silicon macOS installs or upgrades `svcomplex-dev/tap/svw` through
-  Homebrew, then verifies `svw --version`.
+- Apple Silicon macOS installs or upgrades the matching versioned Formula from
+  `svcomplex-dev/tap` through Homebrew, then verifies `svw --version`.
 - Other platforms fail explicitly.
 
-Set `SVW_PI_VERSION=0.1.0` while installing to select an immutable
+Set `SVW_PI_VERSION=latest` to override the packaged release, or set
+`SVW_PI_VERSION=0.1.0` while installing to select another immutable
 `release-0.1.0` artifact. Set `SVW_PI_SKIP_INSTALL=1` only when reviewing the
 package or when a compatible `svw` is already supplied through `SVW_BIN`.
 
@@ -67,9 +69,11 @@ this policy.
 
 ## Publishing
 
-Tags named `vX.Y.Z` publish the matching package version to npm. The
-`pi-package` keyword makes the npm release discoverable in the Pi package
-gallery. Publishing requires the repository Actions secret `NPM_TOKEN`.
+Tags named `vX.Y.Z` publish the matching package version to npm. A trusted
+`svw-release-published` repository dispatch also advances the package patch,
+pins that svw release, runs the package gates, and publishes through npm OIDC.
+The `pi-package` keyword makes the npm release discoverable in the Pi package
+gallery; no persistent npm publishing token is used.
 
 ## License
 

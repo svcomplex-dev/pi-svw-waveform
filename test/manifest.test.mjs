@@ -7,6 +7,7 @@ const manifest = JSON.parse(await readFile(new URL("../package.json", import.met
 test("declares a discoverable Pi package", () => {
   assert.equal(manifest.name, "pi-svw-waveform");
   assert.ok(manifest.keywords.includes("pi-package"));
+  assert.match(manifest.svwRelease, /^(?:latest|release-\d+\.\d+\.\d+)$/);
   assert.deepEqual(manifest.pi.extensions, ["./extensions/index.ts"]);
   assert.deepEqual(manifest.pi.skills, ["./skills"]);
   assert.match(manifest.pi.image, /^https:\/\/raw\.githubusercontent\.com\/svcomplex-dev\/svw\//);
