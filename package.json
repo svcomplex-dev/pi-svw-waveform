@@ -37,6 +37,7 @@
     "skills",
     "scripts/install-svw.mjs",
     "scripts/install-svw.sh",
+    "svw-source.json",
     "README.md",
     "LICENSE"
   ],

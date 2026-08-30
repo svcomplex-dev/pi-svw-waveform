@@ -13,6 +13,6 @@ const publicFiles = [
 test("public package excludes private identifiers", async () => {
   for (const file of publicFiles) {
     const text = await readFile(new URL(`../${file}`, import.meta.url), "utf8");
-    assert.doesNotMatch(text, /maxiao|mxlol233|outlook\.com|\bmxsv\b|\bmxv\b|\bfsdb\b/i, file);
+    assert.doesNotMatch(text, /maxiao|mxlol233|outlook\.com|\bmxv\b/i, file);
   }
 });

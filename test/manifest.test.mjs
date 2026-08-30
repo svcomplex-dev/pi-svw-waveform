@@ -27,4 +27,5 @@ test("ships the automatic svw bootstrap", () => {
   assert.equal(manifest.scripts.postinstall, "node ./scripts/install-svw.mjs");
   assert.ok(manifest.files.includes("scripts/install-svw.sh"));
   assert.ok(manifest.files.includes("scripts/install-svw.mjs"));
+  assert.ok(manifest.files.includes("svw-source.json"));
 });
