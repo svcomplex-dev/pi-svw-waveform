@@ -1,32 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 code@svcomplex.ai
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { type Component, sliceByColumn, Text, visibleWidth } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
+import { accessSync, constants } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const MAX_FRAME_BYTES = 512 * 1024;
 const SGR_SEQUENCE = /\x1b\[[0-9;]*m/g;
-
-const packagedBinary = fileURLToPath(new URL("../vendor/bin/svw", import.meta.url));
-const homebrewBinaries = ["/opt/homebrew/bin/svw", "/usr/local/bin/svw"];
-
-function resolveSvwBinary(): string {
-	const configured = process.env.SVW_BIN?.trim();
-	if (configured) {
-		return configured;
-	}
-	if (existsSync(packagedBinary)) {
-		return packagedBinary;
-	}
-	for (const candidate of homebrewBinaries) {
-		if (existsSync(candidate)) {
-			return candidate;
-		}
-	}
-	return "svw";
-}
 
 interface WaveformDetails {
 	ansi: string;
@@ -35,6 +17,13 @@ interface WaveformDetails {
 	start: number;
 	waveform: string;
 	width: number;
+}
+
+interface RenderEnvelope {
+	end: number;
+	sample_text: string;
+	start: number;
+	styled_text: string;
 }
 
 class WaveformFrame implements Component {
@@ -57,6 +46,21 @@ function normalizeWaveformPath(path: string): string {
 	return path.startsWith("@") ? path.slice(1) : path;
 }
 
+function resolveSvwBinary(): string {
+	const configured = process.env.SVW_BIN?.trim();
+	if (configured) return configured;
+	const here = dirname(fileURLToPath(import.meta.url));
+	for (const candidate of [join(here, "vendor", "bin", "svw"), join(here, "..", "vendor", "bin", "svw")]) {
+		try {
+			accessSync(candidate, constants.X_OK);
+			return candidate;
+		} catch {
+			// Continue to the next package layout, then fall back to PATH.
+		}
+	}
+	return "svw";
+}
+
 function validateFrame(ansi: string, expectedHeight: number, expectedWidth: number): void {
 	if (Buffer.byteLength(ansi, "utf8") > MAX_FRAME_BYTES) {
 		throw new Error("svw returned an unexpectedly large waveform frame");
@@ -74,10 +78,15 @@ function validateFrame(ansi: string, expectedHeight: number, expectedWidth: numb
 	}
 }
 
+const WaveTime = Type.Union([
+	Type.Integer(),
+	Type.String({ pattern: "^(?:[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:s|ms|us|ns|ps|fs)|cycle:\\d+@.+)$" }),
+]);
+
 const WaveformParameters = Type.Object({
-	waveform: Type.String({ description: "VCD or FST waveform path", minLength: 1 }),
-	start: Type.Integer({ description: "Inclusive starting native waveform tick" }),
-	end: Type.Integer({ description: "Inclusive ending native waveform tick" }),
+	waveform: Type.String({ description: "VCD, FST, FSDB, or KBX waveform path", minLength: 1 }),
+	start: WaveTime,
+	end: WaveTime,
 	hier: Type.Array(Type.String({ description: "Exact full hierarchical signal name from svw agent signals", minLength: 1 }), {
 		description: "Hierarchical signals shown from top to bottom",
 		minItems: 1,
@@ -102,7 +111,7 @@ export default function svwWaveformExtension(pi: ExtensionAPI) {
 		renderShell: "self",
 
 		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
-			if (params.end <= params.start) {
+			if (typeof params.start === "number" && typeof params.end === "number" && params.end <= params.start) {
 				throw new Error("end must be greater than start");
 			}
 			const width = params.width ?? 100;
@@ -124,6 +133,7 @@ export default function svwWaveformExtension(pi: ExtensionAPI) {
 				"ansi",
 				"--view",
 				"wave",
+				"--json",
 			];
 			const result = await pi.exec(binary, args, {
 				cwd: ctx.cwd,
@@ -134,13 +144,23 @@ export default function svwWaveformExtension(pi: ExtensionAPI) {
 				const detail = result.stderr.trim() || `svw exited with status ${result.code}`;
 				throw new Error(detail.slice(0, 4096));
 			}
+			let envelope: RenderEnvelope;
+			try {
+				envelope = JSON.parse(result.stdout) as RenderEnvelope;
+			} catch {
+				throw new Error("svw returned an invalid render JSON envelope");
+			}
+			if (typeof envelope.styled_text !== "string" || typeof envelope.sample_text !== "string" ||
+				!Number.isInteger(envelope.start) || !Number.isInteger(envelope.end)) {
+				throw new Error("svw render JSON is missing styled_text or sample_text");
+			}
 			const canvasHeight = 1 + params.hier.length * 4;
-			validateFrame(result.stdout, canvasHeight, width);
+			validateFrame(envelope.styled_text, canvasHeight, width);
 			const details: WaveformDetails = {
-				ansi: result.stdout,
-				end: params.end,
+				ansi: envelope.styled_text,
+				end: envelope.end,
 				height: canvasHeight,
-				start: params.start,
+				start: envelope.start,
 				waveform,
 				width,
 			};
@@ -150,8 +170,9 @@ export default function svwWaveformExtension(pi: ExtensionAPI) {
 						type: "text" as const,
 						text:
 							`Rendered the complete ${width}x${canvasHeight} svw wave canvas for ${params.hier.length} ` +
-							`signal(s) over native ticks ${params.start}..${params.end}. ` +
-							"The colored frame is displayed by the Pi extension and is intentionally not duplicated in model text.",
+							`signal(s) over native ticks ${envelope.start}..${envelope.end}. ` +
+							"The colored frame is displayed by the Pi extension. Compact final values:\n" +
+							envelope.sample_text,
 					},
 				],
 				details,

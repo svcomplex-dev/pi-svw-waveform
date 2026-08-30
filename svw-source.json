@@ -1,0 +1,17 @@
+{
+  "release": "release-0.1.2",
+  "assets": {
+    "linux-x64": {
+      "asset": "svw-release-0.1.2-linux-x64.tar.gz",
+      "archiveSha256": "df55e43bf2b12f7e10b4d48c07d4212d2f53811152be78b01aed2db6dda1cb70"
+    },
+    "macos-arm64": {
+      "asset": "svw-release-0.1.2-macos-arm64.tar.gz",
+      "archiveSha256": "9d7893bf4aee6227f65b4383760f08ab429a2fe55c0328d36a88e140bb3a686b"
+    }
+  },
+  "files": {
+    "extensions/index.ts": "6c3aa744067108ef449c94085df50f80ee324a2e473e79f14d80aeb0cd7ff7ac",
+    "skills/svw-waveform/SKILL.md": "3153094c6e23778beffac6002d202664d2ccf57f2c472b8ec41073ab39dff46a"
+  }
+}
