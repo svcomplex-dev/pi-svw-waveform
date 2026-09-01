@@ -1,17 +1,17 @@
 {
-  "release": "release-0.1.2",
+  "release": "release-0.1.3",
   "assets": {
     "linux-x64": {
-      "asset": "svw-release-0.1.2-linux-x64.tar.gz",
-      "archiveSha256": "df55e43bf2b12f7e10b4d48c07d4212d2f53811152be78b01aed2db6dda1cb70"
+      "asset": "svw-release-0.1.3-linux-x64.tar.gz",
+      "archiveSha256": "2494f9db7738c9ac91ab0f1ed16421cab33e77ada1f9a487df7d2dd7c4ee10b4"
     },
     "macos-arm64": {
-      "asset": "svw-release-0.1.2-macos-arm64.tar.gz",
-      "archiveSha256": "9d7893bf4aee6227f65b4383760f08ab429a2fe55c0328d36a88e140bb3a686b"
+      "asset": "svw-release-0.1.3-macos-arm64.tar.gz",
+      "archiveSha256": "5f7dd1a061f2c115d5cb98486f9c800d6b9673cb06599d814bd8f8cab5584293"
     }
   },
   "files": {
     "extensions/index.ts": "6c3aa744067108ef449c94085df50f80ee324a2e473e79f14d80aeb0cd7ff7ac",
-    "skills/svw-waveform/SKILL.md": "3153094c6e23778beffac6002d202664d2ccf57f2c472b8ec41073ab39dff46a"
+    "skills/svw-waveform/SKILL.md": "11392f52752f92af9d989275f3df4ce0ada11e2eae36d5d554cf54e6c1227d7c"
   }
 }
