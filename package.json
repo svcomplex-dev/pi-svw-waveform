@@ -1,8 +1,8 @@
 {
   "name": "pi-svw-waveform",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Pi package for native svw waveform inspection and terminal rendering",
-  "svwRelease": "release-0.1.3",
+  "svwRelease": "release-0.1.4",
   "type": "module",
   "scripts": {
     "postinstall": "node ./scripts/install-svw.mjs",
